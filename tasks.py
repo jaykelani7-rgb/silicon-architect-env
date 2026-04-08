@@ -103,6 +103,11 @@ TASKS: Dict[str, Dict[str, Any]] = {
 }
 
 
+def _clamp_score(score: float) -> float:
+    """Clamp score to the open interval (0, 1) — never exactly 0.0 or 1.0."""
+    return round(min(0.999, max(0.001, score)), 4)
+
+
 def _base_metrics(task: Dict[str, Any], params: Dict[str, Any], hw: HardwareProfile) -> Dict[str, Any]:
     block_x = params["block_size_x"]
     block_y = params["block_size_y"]
@@ -133,7 +138,7 @@ def grade_vector_add(task: Dict[str, Any], params: Dict[str, Any], hw: HardwareP
             {
                 "bandwidth_utilization": 0.0,
                 "latency_ns": 1_000_000.0,
-                "score": 0.0,
+                "score": _clamp_score(0.0),
                 "oom": metrics["requested_shared_memory_bytes"] > hw.shared_memory_kb * 1024,
             }
         )
@@ -151,13 +156,13 @@ def grade_vector_add(task: Dict[str, Any], params: Dict[str, Any], hw: HardwareP
     )
     latency_ns = 100_000.0 / max(bandwidth_utilization, 0.05)
     partial_score = 0.1 + min(0.8, bandwidth_utilization * 0.8)
-    score = 1.0 if bandwidth_utilization > 0.95 else round(partial_score, 4)
+    score = _clamp_score(1.0 if bandwidth_utilization > 0.95 else partial_score)
 
     metrics.update(
         {
             "bandwidth_utilization": round(bandwidth_utilization, 4),
             "latency_ns": round(latency_ns, 2),
-            "score": round(score, 4),
+            "score": score,
             "oom": False,
         }
     )
@@ -172,7 +177,7 @@ def grade_matmul(task: Dict[str, Any], params: Dict[str, Any], hw: HardwareProfi
                 "cache_miss_rate": 1.0,
                 "dram_reads": float("inf"),
                 "latency_ns": 2_000_000.0,
-                "score": 0.0,
+                "score": _clamp_score(0.0),
                 "oom": metrics["requested_shared_memory_bytes"] > hw.shared_memory_kb * 1024,
             }
         )
@@ -200,7 +205,7 @@ def grade_matmul(task: Dict[str, Any], params: Dict[str, Any], hw: HardwareProfi
     )
     dram_reads = round((1.0 + cache_miss_rate * 4.5) * 1_000_000, 2)
     latency_ns = round(220_000.0 * (1.0 + cache_miss_rate * 3.0), 2)
-    score = round(max(0.0, 1.0 - cache_miss_rate), 4)
+    score = _clamp_score(1.0 - cache_miss_rate)
 
     metrics.update(
         {
@@ -223,7 +228,7 @@ def grade_flash_attention(task: Dict[str, Any], params: Dict[str, Any], hw: Hard
             {
                 "bank_conflicts": 999,
                 "latency_ns": 5_000_000.0,
-                "score": 0.0,
+                "score": _clamp_score(0.0),
                 "oom": True,
             }
         )
@@ -234,7 +239,7 @@ def grade_flash_attention(task: Dict[str, Any], params: Dict[str, Any], hw: Hard
             {
                 "bank_conflicts": 999,
                 "latency_ns": 5_000_000.0,
-                "score": 0.0,
+                "score": _clamp_score(0.0),
                 "oom": False,
             }
         )
@@ -262,7 +267,7 @@ def grade_flash_attention(task: Dict[str, Any], params: Dict[str, Any], hw: Hard
     raw_score = 1.0 - min(1.0, tile_distance * 0.35 + unroll_penalty * 0.2 + conflict_penalty)
     if bank_conflicts == 0 and use_shared and block_x == 16 and block_y == 16 and unroll == 4:
         raw_score = 1.0
-    score = round(max(0.0, raw_score), 4)
+    score = _clamp_score(raw_score)
 
     metrics.update(
         {
