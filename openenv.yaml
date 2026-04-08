@@ -1,0 +1,32 @@
+name: SiliconArchitect-v1
+version: 1.0.0
+entrypoint: environment:OpenEnv
+description: >
+  A CPU-only OpenEnv benchmark for hardware-software co-design. Agents tune
+  virtual kernel launch parameters against a deterministic analytical simulator
+  for vector addition, tiled matrix multiplication, and flash-attention-style
+  workloads.
+domain: systems-optimization
+tags:
+  - openenv
+  - kernel-optimization
+  - compiler-agents
+  - hardware-software-co-design
+observation_model: environment:Observation
+action_model: environment:Action
+reward_model: environment:Reward
+tasks:
+  - id: vector_add_bandwidth
+    name: Vector Addition (Bandwidth Bound)
+    difficulty: easy
+  - id: tiled_matmul_cache
+    name: Tiled Matrix Multiplication (Compute Bound)
+    difficulty: medium
+  - id: flash_attention_shared
+    name: Flash Attention Mock (Shared Memory Conflicts)
+    difficulty: hard
+runtime:
+  python: ">=3.10"
+  max_episode_steps: 6
+  cpu_only: true
+  memory_limit_gb: 8
