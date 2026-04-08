@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "siliconarchitect-v1"
+version = "1.0.0"
+description = "A CPU-only OpenEnv benchmark for hardware-software co-design."
+requires-python = ">=3.10"
+dependencies = [
+    "pydantic>=2.0.0",
+    "PyYAML",
+    "fastapi",
+    "uvicorn",
+    "openai",
+    "openenv-core>=0.2.0"
+]
+
+[project.scripts]
+server = "server.app:main"

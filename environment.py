@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 from tasks import DEFAULT_HARDWARE_PROFILE, TASKS, grade_task
 
@@ -45,7 +45,8 @@ class EnvironmentState(BaseModel):
     done: bool
     history: List[Dict[str, Any]]
 
-    @validator("history", pre=True, always=True)
+    @field_validator("history", mode="before")
+    @classmethod
     def _default_history(cls, value: Any) -> List[Dict[str, Any]]:
         return value or []
 
