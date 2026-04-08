@@ -1,0 +1,15 @@
+# Python Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+.venv/
+venv/
+env/
+
+# OS-specific files
+.DS_Store
+
+# Temporary files from validation
+validate-curl*
